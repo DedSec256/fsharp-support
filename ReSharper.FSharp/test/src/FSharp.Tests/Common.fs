@@ -28,7 +28,7 @@ type FSharpTestAttribute(extension) =
     inherit TestProjectFilePropertiesProvider(extension, MSBuildProjectUtil.CompileElement)
 
     let targetFrameworkId =
-        TargetFrameworkId.Create(FrameworkIdentifier.NetFramework, Version(4, 5, 1), ProfileIdentifier.Default)
+        TargetFrameworkId.Create(FrameworkIdentifier.NetFramework, Version(4, 5), ProfileIdentifier.Default)
 
     new () =
         FSharpTestAttribute(FSharpProjectFileType.FsExtension)
