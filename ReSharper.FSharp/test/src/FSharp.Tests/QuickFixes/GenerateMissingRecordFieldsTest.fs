@@ -11,7 +11,7 @@ type GenerateMissingRecordFieldsTest() =
 
     override x.RelativeTestDataPath = "features/quickFixes/generateMissingRecordFields"
 
-    [<Test>] member x.``Empty 01``() = x.DoNamedTest()
+    [<Test>] member x.``Empty 01 bug``() = x.DoNamedTest()
     [<Test>] member x.``Empty 02 - Space``() = x.DoNamedTest()
     [<Test>] member x.``Empty 03 - New line``() = x.DoNamedTest()
 
