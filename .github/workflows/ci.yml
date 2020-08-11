@@ -50,7 +50,7 @@ jobs:
         with:
           dotnet-version: '3.1.101'
 
-     - name: Test ReSharper.FSharp
+      - name: Test ReSharper.FSharp
         working-directory: ./ReSharper.FSharp
         run: dotnet test
 
