@@ -54,7 +54,7 @@ jobs:
         run: dotnet test --logger:nunit --results-directory TestResults
 
       - name: Report test results
-      - uses: MirrorNG/nunit-reporter@v1.0.9
+        uses: MirrorNG/nunit-reporter@v1.0.9
         if: always()
         with:
           path: ./ReSharper.FSharp/TestResults/*.xml
