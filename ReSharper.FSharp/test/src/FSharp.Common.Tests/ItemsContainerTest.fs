@@ -189,15 +189,6 @@ type FSharpItemsContainerTest() =
               createItem "Compile"       "File4" ])
 
     [<Test>]
-    member x.``Initialization 04 - CompileBefore, CompileAfter``() =
-        x.DoContainerInitializationTest(
-            [ createItem "Compile"       "File3"
-              createItem "CompileAfter"  "File4"
-              createItem "CompileBefore" "File1"
-              createItem "CompileAfter"  "File5"
-              createItem "CompileBefore" "File2" ])
-
-    [<Test>]
     member x.``Initialization 05 - CompileBefore, CompileAfter, folders``() =
         x.DoContainerInitializationTest(
             [ createItem "Compile"       "Folder[1]/File3"
