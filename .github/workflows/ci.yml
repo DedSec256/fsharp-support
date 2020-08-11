@@ -8,7 +8,7 @@ on:
       - net203
 
 jobs:
-  build:
+  test-backend:
     runs-on: ${{ matrix.image }}
     strategy:
       matrix:
@@ -50,29 +50,54 @@ jobs:
         with:
           dotnet-version: '3.1.101'
 
-      - name: Build ReSharper.FSharp
-        working-directory: ./ReSharper.FSharp
-        run: dotnet build
-
-
-  testBackend:
-    needs: build
-    runs-on: ${{ matrix.image }}
-    strategy:
-      matrix:
-        image: [macos-latest, windows-latest]
-    steps:
-      - name: Test ReSharper.FSharp
+     - name: Test ReSharper.FSharp
         working-directory: ./ReSharper.FSharp
         run: dotnet test
 
-  testFrontend:
-    needs: build
+  test-frontend:
     runs-on: ${{ matrix.image }}
     strategy:
       matrix:
         image: [macos-latest, windows-latest]
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
+      GRADLE_USER_HOME: ${{ github.workspace }}/.github/gradle
     steps:
-      - name: Test ReSharper.FSharp
+      - uses: actions/checkout@v2
+
+      # Prepare
+      - name: Gradle JVM Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: build/gradle-jvm
+          key: ${{ runner.os }}.gradle-jvm.${{ hashFiles('**/*.gradle') }}+${{ hashFiles('gradle*') }}
+      - name: Gradle Wrapper Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.GRADLE_USER_HOME }}/wrapper
+          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
+      - name: Gradle Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
+          key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
+      - name: Prepare
+        working-directory: ./rider-fsharp
+        run: ./gradlew prepare
+
+      # Build ReSharper.FSharp
+      - name: NuGet Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}.nuget.${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1.4.0
+        with:
+          dotnet-version: '3.1.101'
+     - name: Build Resharper.FSharp
+        working-directory: ./ReSharper.FSharp
+        run: dotnet build
+      - name: Test rider-fsharp
         working-directory: ./rider-fsharp
         run: ./gradlew test
