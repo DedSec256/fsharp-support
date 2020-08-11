@@ -51,7 +51,14 @@ jobs:
           dotnet-version: '3.1.101'
       - name: Test ReSharper.FSharp
         working-directory: ./ReSharper.FSharp
-        run: dotnet test
+        run: dotnet test --logger:nunit --results-directory TestResults
+
+      - name: Report test results
+        uses: MirrorNG/nunit-reporter@v1.0.9
+        if: always()
+        with:
+          path: ./ReSharper.FSharp/TestResults/*.xml
+          access-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Finalize
       - name: Stop Gradle Daemon # to collect Gradle cache
