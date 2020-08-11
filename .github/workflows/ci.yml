@@ -95,7 +95,7 @@ jobs:
         uses: actions/setup-dotnet@v1.4.0
         with:
           dotnet-version: '3.1.101'
-     - name: Build Resharper.FSharp
+      - name: Build Resharper.FSharp
         working-directory: ./ReSharper.FSharp
         run: dotnet build
       - name: Test rider-fsharp
