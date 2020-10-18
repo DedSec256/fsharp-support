@@ -2,10 +2,10 @@ name: "build-test"
 on:
   push:
     branches:
-      - net203
+      - ber.a/ci
   pull_request:
     branches:
-      - net203
+      - ber.a/ci
 
 jobs:
   test-backend:
