@@ -1,0 +1,73 @@
+name: "build-test"
+on:
+  push:
+    branches:
+      - net203
+  pull_request:
+    branches:
+      - net203
+
+jobs:
+  test-backend:
+    runs-on: ${{ matrix.image }}
+    strategy:
+      matrix:
+        image: [windows-latest]
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
+      GRADLE_USER_HOME: ${{ github.workspace }}/.github/gradle
+    steps:
+      - uses: actions/checkout@v2
+
+      # Prepare
+      - name: Gradle JVM Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: build/gradle-jvm
+          key: ${{ runner.os }}.gradle-jvm.${{ hashFiles('rider-fsharp/gradle*') }}
+
+      - name: Gradle Wrapper Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.GRADLE_USER_HOME }}/wrapper
+          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('rider-fsharp/gradle/**') }}
+
+      - name: NuGet Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}.nuget.${{ hashFiles('ReSharper.FSharp/**/*.csproj') }}+${{ hashFiles('ReSharper.FSharp/**/*.props') }}
+
+      - name: Gradlew Prepare
+        working-directory: ./rider-fsharp
+        run: ./gradlew prepare
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1.4.0
+        with:
+          dotnet-version: '3.1.101'
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      # Build and Test ReSharper.FSharp
+      - name: Test FSharp.Common.Tests
+        working-directory: ./ReSharper.FSharp
+        run: dotnet test test/src/FSharp.Common.Tests/FSharp.Common.Tests.fsproj --logger:nunit --results-directory TestResults/FSharp.Common.Tests
+
+      - name: Test FSharp.Tests
+        if: always()
+        working-directory: ./ReSharper.FSharp
+        run: dotnet test test/src/FSharp.Tests/FSharp.Tests.fsproj --logger:nunit --results-directory TestResults/FSharp.Tests
+
+      - name: Report test results
+        uses: MirrorNG/nunit-reporter@v1.0.9
+        if: always()
+        with:
+          path: ./ReSharper.FSharp/TestResults/**/*.xml
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Finalize
+      - name: Stop Gradle Daemon # to collect Gradle cache
+        working-directory: ./rider-fsharp
+        run: ./gradlew --stop
