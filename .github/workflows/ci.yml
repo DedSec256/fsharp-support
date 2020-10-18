@@ -54,9 +54,9 @@ jobs:
       - name: Test FSharp.Common.Tests
         working-directory: ./ReSharper.FSharp
         run: dotnet test test/src/FSharp.Common.Tests/FSharp.Common.Tests.fsproj --logger:nunit --results-directory TestResults/FSharp.Common.Tests
+        continue-on-error: true
 
       - name: Test FSharp.Tests
-        if: always()
         working-directory: ./ReSharper.FSharp
         run: dotnet test test/src/FSharp.Tests/FSharp.Tests.fsproj --logger:nunit --results-directory TestResults/FSharp.Tests
 
