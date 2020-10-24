@@ -50,6 +50,7 @@ jobs:
 
       # Build
       - name: Build ReSharper.FSharp
+        id: build
         working-directory: ./ReSharper.FSharp
         run: dotnet build
 
@@ -61,7 +62,7 @@ jobs:
 
       - name: Report test results
         uses: MirrorNG/nunit-reporter@v1.0.9
-        if: always()
+        if: steps.build.outputs.exit_code == 0
         with:
           path: ./ReSharper.FSharp/**/TestResults/*.xml
           access-token: ${{ secrets.GITHUB_TOKEN }}
