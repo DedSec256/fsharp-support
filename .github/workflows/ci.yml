@@ -32,6 +32,9 @@ jobs:
           path: ${{ env.GRADLE_USER_HOME }}/wrapper
           key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('rider-fsharp/gradle/**') }}
 
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v1.0.3
+
       - name: NuGet Cache
         uses: actions/cache@v1.1.0
         with:
