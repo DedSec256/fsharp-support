@@ -45,7 +45,7 @@ jobs:
         working-directory: ./rider-fsharp
         run: ./gradlew prepare
 
-      - name: Add MSBuild to PATH (for tests)
+      - name: Add MSBuild to PATH #for tests
         uses: microsoft/setup-msbuild@v1.0.2
 
       # Build
