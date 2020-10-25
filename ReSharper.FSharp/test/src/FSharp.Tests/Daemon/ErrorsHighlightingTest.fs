@@ -11,7 +11,7 @@ type ErrorsHighlightingTest() =
 
     override x.RelativeTestDataPath = "features/daemon/errorsHighlighting"
 
-    [<Test>] member x.``Empty file``() = x.DoNamedTest()
+    [<Test>] member x.``Empty file1``() = x.DoNamedTest()
     [<Test>] member x.``No errors 01``() = x.DoNamedTest()
     [<Test>] member x.``Multiline range``() = x.DoNamedTest()
 

@@ -31,7 +31,7 @@ type ScriptPsiModulesTest() =
     [<Test>] member x.FileInProject() = x.DoTestSolution()
     [<Test>] member x.MultipleTargetFrameworks() = x.DoTestSolution()
 
-    [<Test>] member x.CSharpProject() = x.DoTestSolution()
+    [<Test>] member x.CSharpProject1() = x.DoTestSolution()
     [<Test>] member x.FileDoNotExist() = x.DoTestSolution()
 
     member x.DoTestSolution() =
