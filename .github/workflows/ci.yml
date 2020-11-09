@@ -1,5 +1,9 @@
 name: "build-test"
-on: [push, pull_request]
+on: 
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
 
 jobs:
   test-backend:
@@ -32,12 +36,12 @@ jobs:
         working-directory: ./rider-fsharp
         run: ./gradlew prepare
 
-      - name: Add MSBuild to PATH # for tests
-        uses: microsoft/setup-msbuild@v1.0.2
-
       - name: Build ReSharper.FSharp
         working-directory: ./ReSharper.FSharp
         run: dotnet build
+
+      - name: Add MSBuild to PATH # for tests
+        uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Test ReSharper.FSharp
         working-directory: ./ReSharper.FSharp
