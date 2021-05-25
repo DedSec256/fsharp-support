@@ -8,10 +8,15 @@ open FSharp.Core.CompilerServices
 open JetBrains.Core
 open JetBrains.Lifetimes
 open JetBrains.ProjectModel
+open JetBrains.ProjectModel.Tasks
+open JetBrains.Rd.Tasks
+open JetBrains.ReSharper.Feature.Services.Daemon
+open JetBrains.ReSharper.Plugins.FSharp.Checker
 open JetBrains.ReSharper.Plugins.FSharp.Settings
 open JetBrains.ReSharper.Plugins.FSharp.TypeProviders.Protocol
 open JetBrains.ReSharper.Plugins.FSharp.TypeProviders.Protocol.Exceptions
 open JetBrains.ReSharper.Plugins.FSharp.TypeProviders.Protocol.Models
+open JetBrains.ReSharper.Psi.Files
 
 type IProxyExtensionTypingProvider =
     inherit IExtensionTypingProvider
@@ -22,10 +27,13 @@ type IProxyExtensionTypingProvider =
 [<SolutionComponent>]
 type ExtensionTypingProviderShim(solution: ISolution, toolset: ISolutionToolset,
         experimentalFeatures: FSharpExperimentalFeaturesProvider,
+        checkerService: FcsCheckerService, daemon: IDaemon, psiFiles: IPsiFiles,
+        scheduler: ISolutionLoadTasksScheduler,
         typeProvidersLoadersFactory: TypeProvidersExternalProcessFactory) as this =
     let lifetime = solution.GetLifetime()
     let defaultShim = ExtensionTypingProvider
     let outOfProcess = experimentalFeatures.OutOfProcessTypeProviders
+    let hostFromTemp = experimentalFeatures.HostTypeProvidersFromTempFolder
 
     let mutable connection: TypeProvidersConnection = null
     let mutable typeProvidersHostLifetime: LifetimeDefinition = null
@@ -35,7 +43,7 @@ type ExtensionTypingProviderShim(solution: ISolution, toolset: ISolutionToolset,
         isNotNull connection && connection.IsActive
 
     let terminateConnection () =
-        if isConnectionAlive() then typeProvidersHostLifetime.Terminate()
+        if isConnectionAlive () then typeProvidersHostLifetime.Terminate()
 
     let connect () =
         if not (isConnectionAlive ()) then
@@ -43,13 +51,28 @@ type ExtensionTypingProviderShim(solution: ISolution, toolset: ISolutionToolset,
             connection <- typeProvidersLoadersFactory.Create(typeProvidersHostLifetime.Lifetime).Run()
             typeProvidersManager <- TypeProvidersManager(connection) :?> _
 
+    let restart _ =
+        let paths = typeProvidersManager.GetAssemblies()
+        terminateConnection ()
+        checkerService.InvalidateFcsProjects(solution, fun x -> paths.Contains(x.Location))
+        psiFiles.IncrementModificationTimestamp(null)
+        daemon.Invalidate()
+        Unit.Instance
+
     do
-        lifetime.Bracket((fun () -> ExtensionTypingProvider <- this),
-            fun () -> ExtensionTypingProvider <- defaultShim)
+        lifetime.Bracket((fun () -> ExtensionTypingProvider <- this), fun () -> ExtensionTypingProvider <- defaultShim)
 
         toolset.Changed.Advise(lifetime, fun _ -> terminateConnection ())
         outOfProcess.Change.Advise(lifetime, fun enabled ->
             if enabled.HasNew && not enabled.New then terminateConnection ())
+
+        hostFromTemp.Change.Advise(lifetime, fun enabled ->
+            if enabled.HasNew && not enabled.New then terminateConnection ())
+
+        let rdTypeProvidersHost = solution.RdFSharpModel().FSharpTypeProvidersHost
+
+        rdTypeProvidersHost.RestartTypeProviders.Set(restart)
+        rdTypeProvidersHost.IsLaunched.Set(fun _ -> isNotNull connection)
 
     interface IProxyExtensionTypingProvider with
         member this.InstantiateTypeProvidersOfAssembly(runTimeAssemblyFileName: string,
@@ -66,7 +89,7 @@ type ExtensionTypingProviderShim(solution: ISolution, toolset: ISolutionToolset,
                 try
                     typeProvidersManager.GetOrCreate(runTimeAssemblyFileName, designTimeAssemblyNameString,
                         resolutionEnvironment, isInvalidationSupported, isInteractive, systemRuntimeContainsType,
-                        systemRuntimeAssemblyVersion, compilerToolsPath)
+                        systemRuntimeAssemblyVersion, compilerToolsPath, hostFromTemp.Value)
                 with :? TypeProvidersInstantiationException as e  ->
                     logError (TypeProviderError(e.FcsNumber, "", m, [e.Message]))
                     []
