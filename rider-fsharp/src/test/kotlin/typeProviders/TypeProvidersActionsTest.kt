@@ -1,5 +1,6 @@
 package typeProviders
 
+import com.jetbrains.rd.platform.util.lifetime
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rdclient.testFramework.waitForDaemon
 import com.jetbrains.rdclient.util.idea.waitAndPump
@@ -29,7 +30,7 @@ class TypeProvidersActionsTest : BaseTestWithSolution() {
     private val rdFcsHost get() = project.solution.rdFSharpModel.fsharpTestHost
 
     private fun waitForTypeProviders() {
-        waitAndPump(Lifetime.Eternal, { rdFcsHost.typeProvidersRuntimeVersion.sync(Unit) != null }, Duration.ofSeconds(60000))
+        waitAndPump(project.lifetime, { rdFcsHost.typeProvidersRuntimeVersion.sync(Unit) != null }, Duration.ofSeconds(60000))
     }
 
     @Test
