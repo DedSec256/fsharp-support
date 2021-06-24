@@ -11,6 +11,7 @@ open JetBrains.ProjectModel
 open JetBrains.ProjectModel.Tasks
 open JetBrains.Rd.Tasks
 open JetBrains.ReSharper.Feature.Services.Daemon
+open JetBrains.ReSharper.Plugins.FSharp
 open JetBrains.ReSharper.Plugins.FSharp.Checker
 open JetBrains.ReSharper.Plugins.FSharp.Settings
 open JetBrains.ReSharper.Plugins.FSharp.TypeProviders.Protocol
