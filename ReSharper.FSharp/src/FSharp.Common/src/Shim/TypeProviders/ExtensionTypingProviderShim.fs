@@ -30,7 +30,6 @@ type IProxyExtensionTypingProvider =
 type ExtensionTypingProviderShim(solution: ISolution, toolset: ISolutionToolset,
         experimentalFeatures: FSharpExperimentalFeaturesProvider,
         checkerService: FcsCheckerService, daemon: IDaemon, psiFiles: IPsiFiles,
-        scheduler: ISolutionLoadTasksScheduler,
         typeProvidersLoadersFactory: TypeProvidersExternalProcessFactory) as this =
     let lifetime = solution.GetLifetime()
     let defaultShim = ExtensionTypingProvider
